@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "Connect360",
+    "slug": "connect360",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "connect360",
+    "userInterfaceStyle": "automatic",
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Connect360 to access your camera for scanning tags."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "3498ce26-8fb5-4c5d-96a9-4b723b3defe8"
+      }
+    },
+    "owner": "ironman2024"
+  }
+}
