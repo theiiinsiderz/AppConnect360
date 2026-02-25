@@ -1,5 +1,5 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import * as SecureStore from 'expo-secure-store';
 import { API_BASE_URL } from './config';
 
 const api = axios.create({
@@ -15,7 +15,7 @@ const api = axios.create({
 // ── Auth interceptor: attach JWT token to every request ──
 api.interceptors.request.use(async (config) => {
     try {
-        const raw = await AsyncStorage.getItem('auth-storage');
+        const raw = await SecureStore.getItemAsync('auth-storage');
         if (raw) {
             const parsed = JSON.parse(raw);
             const token = parsed?.state?.token;

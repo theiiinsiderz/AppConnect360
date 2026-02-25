@@ -13,7 +13,8 @@
         {
           "cameraPermission": "Allow Connect360 to access your camera for scanning tags."
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true

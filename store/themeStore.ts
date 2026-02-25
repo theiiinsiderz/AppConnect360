@@ -1,7 +1,7 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Appearance, ColorSchemeName } from 'react-native';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
+import { secureStorage } from '../utils/secureStorage';
 
 interface ThemeState {
     mode: ColorSchemeName;
@@ -18,7 +18,7 @@ export const useThemeStore = create<ThemeState>()(
         }),
         {
             name: 'theme-storage',
-            storage: createJSONStorage(() => AsyncStorage),
+            storage: createJSONStorage(() => secureStorage),
         }
     )
 );

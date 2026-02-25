@@ -245,7 +245,7 @@ function RootLayoutNav() {
   const router = useRouter();
 
   // Debounce flag prevents routing flicker on cold start when the
-  // auth store is hydrating from AsyncStorage.
+  // auth store is hydrating from SecureStore.
   const [authReady, setAuthReady] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -311,13 +311,13 @@ function RootLayoutNav() {
 
   useEffect(() => {
     if (!authReady) return;
-    if (!isAuthenticated) return;
 
     const inAuthGroup = segments[0] === '(auth)';
+    const isLoggedIn = isAuthenticated && !!user;
 
-    if (!user && !inAuthGroup) {
+    if (!isLoggedIn && !inAuthGroup) {
       router.replace('/(auth)/login');
-    } else if (user && inAuthGroup) {
+    } else if (isLoggedIn && inAuthGroup) {
       router.replace('/(tabs)');
     }
   }, [user, segments, authReady, isAuthenticated]);
