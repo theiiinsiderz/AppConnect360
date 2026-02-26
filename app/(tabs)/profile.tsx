@@ -61,6 +61,7 @@ export default function ProfileScreen() {
     const t = useAppTheme();
     const { mode, toggleMode } = useThemeStore();
     const { user, logout } = useAuthStore();
+    const isAdmin = user?.role === 'admin' || user?.role === 'ADMIN';
 
     const handleLogout = useCallback(() => {
         Alert.alert(
@@ -116,7 +117,7 @@ export default function ProfileScreen() {
                         label="Privacy & Security"
                         onPress={() => { }}
                     />
-                    {user?.role === 'admin' && (
+                    {isAdmin && (
                         <SettingsRow
                             icon="shield-outline"
                             iconColor={palette.amber}
@@ -126,7 +127,7 @@ export default function ProfileScreen() {
                             showSeparator={false}
                         />
                     )}
-                    {!user?.role || user.role !== 'admin' ? (
+                    {!isAdmin ? (
                         <SettingsRow
                             icon="notifications-outline"
                             iconColor={palette.amber}

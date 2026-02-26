@@ -26,6 +26,7 @@ import { palette, radii, spacing, useAppTheme } from '../../theme/theme';
 
 const { width } = Dimensions.get('window');
 const COLUMN_WIDTH = (width - spacing.md * 3) / 2;
+const getProductKey = (item: Product) => item._id || item.id || '';
 
 // ─── TouchableScale ──────────────────────────────────────────────────────────
 
@@ -75,12 +76,14 @@ const SkeletonCard = memo(({ isDark }: { isDark: boolean }) => {
     const shimmer = useRef(new Animated.Value(0.3)).current;
 
     useEffect(() => {
-        Animated.loop(
+        const loop = Animated.loop(
             Animated.sequence([
                 Animated.timing(shimmer, { toValue: 0.7, duration: 800, useNativeDriver: true }),
                 Animated.timing(shimmer, { toValue: 0.3, duration: 800, useNativeDriver: true }),
             ])
-        ).start();
+        );
+        loop.start();
+        return () => loop.stop();
     }, []);
 
     const bgColor = isDark ? 'rgba(255,255,255,0.06)' : '#E2E8F0';
@@ -163,7 +166,7 @@ const ProductCard = memo(({ item, onAdd, isDark }: {
             </View>
         </View>
     );
-}, (prev, next) => prev.item._id === next.item._id);
+}, (prev, next) => getProductKey(prev.item) === getProductKey(next.item));
 
 // ─── Cart Badge ───────────────────────────────────────────────────────────────
 
@@ -195,15 +198,19 @@ const CartButton = memo(({ totalItems, badgeScale, onPress }: {
 export default function ShopScreen() {
     const router = useRouter();
     const t = useAppTheme();
-    const { products, fetchProducts, addToCart, cart, isLoading } = useShopStore();
+    const products = useShopStore((state) => state.products);
+    const fetchProducts = useShopStore((state) => state.fetchProducts);
+    const addToCart = useShopStore((state) => state.addToCart);
+    const cart = useShopStore((state) => state.cart);
+    const isLoading = useShopStore((state) => state.isLoading);
 
     const badgeScale = useRef(new Animated.Value(1)).current;
     const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
     const prevItemsRef = useRef(totalItems);
 
     useEffect(() => {
-        fetchProducts();
-    }, []);
+        void fetchProducts();
+    }, [fetchProducts]);
 
     useEffect(() => {
         if (totalItems > prevItemsRef.current) {
@@ -235,7 +242,9 @@ export default function ShopScreen() {
                 ctaLabel="Notify Me"
                 onCta={() => { }}
                 secondaryLabel="Refresh"
-                onSecondary={fetchProducts}
+                onSecondary={() => {
+                    void fetchProducts({ force: true });
+                }}
             />
         );
     }, [isLoading, t, fetchProducts]);
@@ -255,7 +264,7 @@ export default function ShopScreen() {
 
             <FlatList
                 data={isLoading && products.length === 0 ? [] : products}
-                keyExtractor={(item) => item._id}
+                keyExtractor={getProductKey}
                 renderItem={renderItem}
                 numColumns={2}
                 contentContainerStyle={[
@@ -272,7 +281,9 @@ export default function ShopScreen() {
                 refreshControl={
                     <RefreshControl
                         refreshing={isLoading && products.length > 0}
-                        onRefresh={fetchProducts}
+                        onRefresh={() => {
+                            void fetchProducts({ force: true });
+                        }}
                         tintColor={t.primary}
                     />
                 }

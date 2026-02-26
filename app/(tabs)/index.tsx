@@ -208,12 +208,14 @@ const Skeleton = memo(
   }) => {
     const shimmer = useRef(new Animated.Value(0)).current;
     useEffect(() => {
-      Animated.loop(
+      const loop = Animated.loop(
         Animated.sequence([
           Animated.timing(shimmer, { toValue: 1, duration: 750, useNativeDriver: true }),
           Animated.timing(shimmer, { toValue: 0, duration: 750, useNativeDriver: true }),
         ])
-      ).start();
+      );
+      loop.start();
+      return () => loop.stop();
     }, []);
     return (
       <Animated.View
@@ -299,12 +301,14 @@ const SpringPress = memo(
 const NotifDotAnimated = memo(() => {
   const pulse = useRef(new Animated.Value(0)).current;
   useEffect(() => {
-    Animated.loop(
+    const loop = Animated.loop(
       Animated.sequence([
         Animated.timing(pulse, { toValue: 1, duration: 1800, useNativeDriver: true }),
         Animated.timing(pulse, { toValue: 0, duration: 0, useNativeDriver: true }),
       ])
-    ).start();
+    );
+    loop.start();
+    return () => loop.stop();
   }, []);
 
   return (
@@ -340,13 +344,15 @@ const ShimmerPill = memo(
   ({ text }: { text: string }) => {
     const shimmer = useRef(new Animated.Value(-1)).current;
     useEffect(() => {
-      Animated.loop(
+      const loop = Animated.loop(
         Animated.timing(shimmer, {
           toValue: 1,
           duration: 2500,
           useNativeDriver: true,
         })
-      ).start();
+      );
+      loop.start();
+      return () => loop.stop();
     }, []);
 
     return (
@@ -521,19 +527,22 @@ export default function HomeScreen() {
   const { mode } = useThemeStore();
   const theme = mode === 'dark' ? DARK_THEME : LIGHT_THEME;
   const { user, isAuthenticated } = useAuthStore();
-  const { tags, fetchTags, togglePrivacy, isLoading } = useTagStore();
+  const tags = useTagStore((state) => state.tags);
+  const fetchTags = useTagStore((state) => state.fetchTags);
+  const togglePrivacy = useTagStore((state) => state.togglePrivacy);
+  const isLoading = useTagStore((state) => state.isLoading);
   const [refreshing, setRefreshing] = useState(false);
   const [activeTagPage, setActiveTagPage] = useState(0);
 
   useEffect(() => {
     if (isAuthenticated && user) {
-      fetchTags();
+      void fetchTags();
     }
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user, fetchTags]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await fetchTags();
+    await fetchTags({ force: true });
     setRefreshing(false);
   }, [fetchTags]);
 
@@ -566,13 +575,15 @@ export default function HomeScreen() {
   // v2: Promo icon slow rotation
   const promoRotation = useRef(new Animated.Value(0)).current;
   useEffect(() => {
-    Animated.loop(
+    const loop = Animated.loop(
       Animated.timing(promoRotation, {
         toValue: 1,
         duration: 12000,
         useNativeDriver: true,
       })
-    ).start();
+    );
+    loop.start();
+    return () => loop.stop();
   }, []);
 
   // Staggered section animations
@@ -657,7 +668,7 @@ export default function HomeScreen() {
       >
 
         {/* Admin shortcut */}
-        {user?.role === 'admin' && (
+        {(user?.role === 'admin' || user?.role === 'ADMIN') && (
           <Animated.View style={[actionsAnim, { marginBottom: sp(2) }]}>
             <Button
               title="Admin Dashboard"

@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
     ActivityIndicator,
     FlatList,
@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import api from '../../services/api';
+import { ENDPOINTS } from '../../services/config';
 import { useAuthStore } from '../../store/authStore';
 import { useThemeStore } from '../../store/themeStore';
 
@@ -47,6 +48,13 @@ export default function InboxScreen() {
     const [messages, setMessages] = useState<Message[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isRefreshing, setIsRefreshing] = useState(false);
+    const isMountedRef = useRef(true);
+
+    useEffect(() => {
+        return () => {
+            isMountedRef.current = false;
+        };
+    }, []);
 
     const isDark = mode === 'dark';
     const theme = {
@@ -60,20 +68,26 @@ export default function InboxScreen() {
 
     const fetchMessages = useCallback(async () => {
         if (!user?.id && !user?._id) {
-            setIsLoading(false);
-            setIsRefreshing(false);
+            if (isMountedRef.current) {
+                setIsLoading(false);
+                setIsRefreshing(false);
+            }
             return;
         }
-        const ownerId = user.id || user._id;
+        const ownerId = (user.id || user._id) as string;
 
         try {
-            const response = await api.get(`/messages/${ownerId}`);
-            setMessages(response.data);
+            const response = await api.get(ENDPOINTS.MESSAGES_BY_OWNER(ownerId));
+            if (isMountedRef.current) {
+                setMessages(response.data);
+            }
         } catch (error) {
             console.error('Error fetching messages:', error);
         } finally {
-            setIsLoading(false);
-            setIsRefreshing(false);
+            if (isMountedRef.current) {
+                setIsLoading(false);
+                setIsRefreshing(false);
+            }
         }
     }, [user]);
 
@@ -83,7 +97,7 @@ export default function InboxScreen() {
 
     const onRefresh = () => {
         setIsRefreshing(true);
-        fetchMessages();
+        void fetchMessages();
     };
 
     const renderMessage = ({ item }: { item: Message }) => (
@@ -97,7 +111,7 @@ export default function InboxScreen() {
             <View style={styles.messageHeader}>
                 <View style={[styles.avatar, { backgroundColor: theme.primary + '15' }]}>
                     <Text style={[styles.avatarText, { color: theme.primary }]}>
-                        {item.senderName[0].toUpperCase()}
+                        {(item.senderName?.[0] || '?').toUpperCase()}
                     </Text>
                 </View>
                 <View style={styles.headerInfo}>

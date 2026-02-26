@@ -42,20 +42,27 @@ function ScannerFrame() {
 
     useEffect(() => {
         // Pulse animation on corners
-        Animated.loop(
+        const pulseLoop = Animated.loop(
             Animated.sequence([
                 Animated.timing(pulse, { toValue: 1, duration: 1200, useNativeDriver: true }),
                 Animated.timing(pulse, { toValue: 0.7, duration: 1200, useNativeDriver: true }),
             ])
-        ).start();
+        );
+        pulseLoop.start();
 
         // Laser sweep line
-        Animated.loop(
+        const sweepLoop = Animated.loop(
             Animated.sequence([
                 Animated.timing(sweep, { toValue: 1, duration: 2000, useNativeDriver: true }),
                 Animated.timing(sweep, { toValue: 0, duration: 0, useNativeDriver: true }),
             ])
-        ).start();
+        );
+        sweepLoop.start();
+
+        return () => {
+            pulseLoop.stop();
+            sweepLoop.stop();
+        };
     }, []);
 
     const cornerStyle = (position: object) => [

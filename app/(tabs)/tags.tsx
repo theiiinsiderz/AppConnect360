@@ -30,12 +30,14 @@ const SkeletonCard = memo(({ isDark }: { isDark: boolean }) => {
     const shimmer = useRef(new Animated.Value(0)).current;
 
     useEffect(() => {
-        Animated.loop(
+        const loop = Animated.loop(
             Animated.sequence([
                 Animated.timing(shimmer, { toValue: 1, duration: 900, useNativeDriver: true }),
                 Animated.timing(shimmer, { toValue: 0, duration: 900, useNativeDriver: true }),
             ])
-        ).start();
+        );
+        loop.start();
+        return () => loop.stop();
     }, []);
 
     const opacity = shimmer.interpolate({
@@ -140,14 +142,17 @@ const FadeInItem = memo(({
 export default function TagsScreen() {
     const router = useRouter();
     const t = useAppTheme();
-    const { tags, fetchTags, togglePrivacy, isLoading } = useTagStore();
+    const tags = useTagStore((state) => state.tags);
+    const fetchTags = useTagStore((state) => state.fetchTags);
+    const togglePrivacy = useTagStore((state) => state.togglePrivacy);
+    const isLoading = useTagStore((state) => state.isLoading);
     const { isAuthenticated, user } = useAuthStore();
 
     useEffect(() => {
         if (isAuthenticated && user) {
-            fetchTags();
+            void fetchTags();
         }
-    }, [isAuthenticated, user]);
+    }, [isAuthenticated, user, fetchTags]);
 
     const renderItem = useCallback(
         ({ item, index }: { item: any; index: number }) => (
@@ -204,7 +209,9 @@ export default function TagsScreen() {
                     refreshControl={
                         <RefreshControl
                             refreshing={isLoading}
-                            onRefresh={fetchTags}
+                            onRefresh={() => {
+                                void fetchTags({ force: true });
+                            }}
                             tintColor={t.primary}
                             colors={[t.primary]}
                         />
