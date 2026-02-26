@@ -224,7 +224,7 @@ export default function TagsScreen() {
                             title="No Tags Yet"
                             body={"Register your first vehicle tag to\nstart tracking and managing it."}
                             ctaLabel="Register New Tag"
-                            onCta={() => router.push('/register-tag')}
+                            onCta={() => router.push('/(tabs)/scan')}
                         />
                     }
                     removeClippedSubviews={Platform.OS === 'android'}
