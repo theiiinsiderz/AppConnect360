@@ -1,6 +1,6 @@
 // Set EXPO_PUBLIC_API_BASE_URL for environment-specific API routing.
 // Example: EXPO_PUBLIC_API_BASE_URL=http://10.169.138.121:5000/api
-const rawBaseUrl = process.env.EXPO_PUBLIC_API_BASE_URL || 'https://carcard.onrender.com/api';
+const rawBaseUrl = process.env.EXPO_PUBLIC_API_BASE_URL || 'https://backendconnect360-production.up.railway.app/api';
 export const API_BASE_URL = rawBaseUrl.replace(/\/+$/, '');
 
 /**
