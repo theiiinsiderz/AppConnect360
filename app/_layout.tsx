@@ -21,7 +21,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
 import * as Notifications from 'expo-notifications';
 import { SplashScreen, Stack, useRouter, useSegments } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Animated,
   Platform,
@@ -262,19 +262,30 @@ function RootLayoutNav() {
   const [notificationData, setNotificationData] = useState({ senderName: '', message: '', timestamp: '' });
   const notificationListener = useRef<any>(null);
   const responseListener = useRef<any>(null);
+  const registeredOwnerIdRef = useRef<string | null>(null);
+
+  const buildNotificationPreview = useCallback((notification: Notifications.Notification) => {
+    const data = notification.request.content.data as { senderName?: string; message?: string };
+    const title = notification.request.content.title || '';
+    const body = notification.request.content.body || '';
+    const senderName = data?.senderName || title.replace(/^New Message from\s*/i, '').trim() || 'Unknown';
+    const message = data?.message || body || '';
+
+    return { senderName, message };
+  }, []);
 
   useEffect(() => {
     if (!authReady || !isAuthenticated || !user) return;
 
     const ownerId = user.id || (user as any)._id;
-    if (ownerId) {
-      NotificationService.registerForPushNotificationsAsync(ownerId);
+    if (ownerId && registeredOwnerIdRef.current !== ownerId) {
+      registeredOwnerIdRef.current = ownerId;
+      void NotificationService.registerForPushNotificationsAsync(ownerId);
     }
 
     // Listener for foreground notifications
     notificationListener.current = Notifications.addNotificationReceivedListener((notification: Notifications.Notification) => {
-      const data = notification.request.content.data as { senderName?: string; message?: string };
-      const { senderName, message } = data;
+      const { senderName, message } = buildNotificationPreview(notification);
       if (senderName && message) {
         setNotificationData({
           senderName,
@@ -287,8 +298,7 @@ function RootLayoutNav() {
 
     // Listener for notification taps (background/killed state)
     responseListener.current = Notifications.addNotificationResponseReceivedListener((response: Notifications.NotificationResponse) => {
-      const data = response.notification.request.content.data as { senderName?: string; message?: string };
-      const { senderName, message } = data;
+      const { senderName, message } = buildNotificationPreview(response.notification);
       if (senderName && message) {
         setNotificationData({
           senderName,
@@ -307,7 +317,7 @@ function RootLayoutNav() {
         responseListener.current.remove();
       }
     };
-  }, [authReady, isAuthenticated, user]);
+  }, [authReady, isAuthenticated, user, buildNotificationPreview]);
 
   useEffect(() => {
     if (!authReady) return;
