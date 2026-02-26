@@ -6,14 +6,20 @@ import { secureStorage } from '../utils/secureStorage';
 
 interface User {
     id?: string;
-    _id: string;
+    _id?: string;
     phoneNumber: string;
     name?: string;
     email?: string;
     avatar?: string;
     token?: string;
-    role?: 'user' | 'admin';
+    role?: 'user' | 'admin' | 'USER' | 'ADMIN';
 }
+
+const normalizeRole = (role: unknown): User['role'] => {
+    if (role === 'admin' || role === 'ADMIN') return 'admin';
+    if (role === 'user' || role === 'USER') return 'user';
+    return undefined;
+};
 
 interface AuthState {
     user: User | null;
@@ -54,9 +60,13 @@ export const useAuthStore = create<AuthState>()(
                 try {
                     const response = await api.post(ENDPOINTS.AUTH_VERIFY_OTP, { phoneNumber, otp });
                     const { user, token } = response.data;
+                    const normalizedUser = {
+                        ...user,
+                        role: normalizeRole(user?.role),
+                    };
 
                     set({
-                        user,
+                        user: normalizedUser,
                         token,
                         isAuthenticated: true,
                         isLoading: false
@@ -73,7 +83,12 @@ export const useAuthStore = create<AuthState>()(
                 set({ user: null, token: null, isAuthenticated: false });
             },
 
-            setUser: (user) => set({ user }),
+            setUser: (user) => set({
+                user: {
+                    ...user,
+                    role: normalizeRole(user?.role),
+                }
+            }),
         }),
         {
             name: 'auth-storage',
