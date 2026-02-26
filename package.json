@@ -6,7 +6,14 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "test:all": "npx ts-node debug/run-all.ts",
+    "test:api": "npx ts-node debug/test-1-api.ts",
+    "test:auth": "npx ts-node debug/test-2-auth.ts",
+    "test:tags": "npx ts-node debug/test-3-tags.ts",
+    "test:shop": "npx ts-node debug/test-4-shop.ts",
+    "test:scan": "npx ts-node debug/test-5-scan.ts",
+    "test:admin": "npx ts-node debug/test-6-admin.ts"
   },
   "dependencies": {
     "@expo/metro-runtime": "^6.1.2",
@@ -55,9 +62,11 @@
   },
   "devDependencies": {
     "@types/expo": "^32.0.13",
+    "@types/node": "^20.12.7",
     "@types/react": "~19.1.0",
     "@types/react-native": "^0.72.8",
     "react-test-renderer": "19.1.0",
+    "ts-node": "^10.9.2",
     "typescript": "~5.9.2"
   },
   "private": true
