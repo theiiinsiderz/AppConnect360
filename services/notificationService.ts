@@ -2,6 +2,7 @@ import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 import api from './api';
+import { ENDPOINTS } from './config';
 
 Notifications.setNotificationHandler({
     handleNotification: async () => ({
@@ -44,7 +45,7 @@ export class NotificationService {
 
             // Register token with backend
             try {
-                await api.post('/register-token', { ownerId, pushToken: token });
+                await api.post(ENDPOINTS.MESSAGE_REGISTER_TOKEN, { ownerId, pushToken: token });
                 console.log('Token registered with backend');
             } catch (error) {
                 console.error('Error registering token with backend:', error);
