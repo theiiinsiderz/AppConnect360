@@ -37,7 +37,11 @@ api.interceptors.response.use(
             const method = error.config?.method?.toUpperCase() || '?';
             const url = error.config?.url || '?';
             const status = error.response?.status || 'NETWORK_ERROR';
-            const message = error.response?.data?.message || error.message;
+            const message =
+                error.response?.data?.message ||
+                error.response?.data?.error?.message ||
+                error.response?.data?.error ||
+                error.message;
             console.warn(`⚠️ API ${method} ${url} → ${status}: ${message}`);
         }
         return Promise.reject(error);
