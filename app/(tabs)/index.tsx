@@ -757,7 +757,7 @@ export default function HomeScreen() {
                 ))}
                 {/* v2: Gradient-bordered Add Tag tile */}
                 <SpringPress
-                  onPress={() => router.push('/register-tag')}
+                  onPress={() => router.push('/(tabs)/scan')}
                   accessibilityLabel="Add new tag"
                   accessibilityHint="Register a new vehicle tag"
                 >

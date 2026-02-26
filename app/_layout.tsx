@@ -395,14 +395,7 @@ function RootLayoutNav() {
           }}
         />
 
-        {/* Register tag */}
-        <Stack.Screen
-          name="register-tag"
-          options={{
-            headerShown: false,
-            animation: 'slide_from_right',
-          }}
-        />
+
       </Stack>
       <MessageModal
         visible={modalVisible}
