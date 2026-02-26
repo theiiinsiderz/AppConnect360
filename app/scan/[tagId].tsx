@@ -1082,7 +1082,9 @@ export default function PublicScanScreen() {
     const { tagId } = useLocalSearchParams<{ tagId: string }>();
     const router = useRouter();
     const t = useAppTheme();
-    const { getPublicTag, activateTagSendOtp, activateTagVerifyOtp } = useTagStore();
+    const getPublicTag = useTagStore((state) => state.getPublicTag);
+    const activateTagSendOtp = useTagStore((state) => state.activateTagSendOtp);
+    const activateTagVerifyOtp = useTagStore((state) => state.activateTagVerifyOtp);
     const { user: authUser } = useAuthStore();
     const insets = useSafeAreaInsets();
 
@@ -1099,6 +1101,17 @@ export default function PublicScanScreen() {
     const [activationError, setActivationError] = useState('');
     const [activationSuccess, setActivationSuccess] = useState(false);
     const [resendTimer, setResendTimer] = useState(0);
+    const isMountedRef = useRef(true);
+    const refreshTagTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    useEffect(() => {
+        return () => {
+            isMountedRef.current = false;
+            if (refreshTagTimeoutRef.current) {
+                clearTimeout(refreshTagTimeoutRef.current);
+            }
+        };
+    }, []);
 
     // Derive domain type — defaults to CAR before tag loads
     const domainType: DomainType = useMemo(() => {
@@ -1111,30 +1124,17 @@ export default function PublicScanScreen() {
         [domainType, t.isDark]
     );
 
-    useEffect(() => {
-        if (tagId) loadTag();
-    }, [tagId]);
-
-    // Resend timer countdown (unchanged)
-    useEffect(() => {
-        if (resendTimer <= 0) return;
-        const interval = setInterval(() => {
-            setResendTimer(prev => {
-                if (prev <= 1) { clearInterval(interval); return 0; }
-                return prev - 1;
-            });
-        }, 1000);
-        return () => clearInterval(interval);
-    }, [resendTimer]);
-
-    const loadTag = async () => {
+    const loadTag = useCallback(async () => {
         setLoading(true);
-        if (__DEV__) console.log('🔍 Loading tag:', tagId);
+        if (__DEV__) console.log('Loading tag:', tagId);
         const data = await getPublicTag(tagId as string);
-        if (__DEV__) console.log('🔍 Tag response:', JSON.stringify(data)?.slice(0, 200));
+        if (__DEV__) console.log('Tag response:', JSON.stringify(data)?.slice(0, 200));
+
+        if (!isMountedRef.current) {
+            return;
+        }
 
         if (data && data.success) {
-            // Handle incomplete profiles or minted (blank) tags
             if (data.status === 'PROFILE_INCOMPLETE' || data.data?.metadata?.status === 'MINTED') {
                 setTag({
                     code: tagId as string,
@@ -1156,7 +1156,25 @@ export default function PublicScanScreen() {
             setError(data?.error?.message || 'Tag not found or inactive');
         }
         setLoading(false);
-    };
+    }, [getPublicTag, tagId]);
+
+    useEffect(() => {
+        if (tagId) {
+            void loadTag();
+        }
+    }, [tagId, loadTag]);
+
+    // Resend timer countdown (unchanged)
+    useEffect(() => {
+        if (resendTimer <= 0) return;
+        const interval = setInterval(() => {
+            setResendTimer(prev => {
+                if (prev <= 1) { clearInterval(interval); return 0; }
+                return prev - 1;
+            });
+        }, 1000);
+        return () => clearInterval(interval);
+    }, [resendTimer]);
 
     // ── Activation handlers (unchanged logic) ──
     const handleSendOtp = useCallback(async () => {
@@ -1166,7 +1184,7 @@ export default function PublicScanScreen() {
         setActivating(false);
         if (success) { setActivationStep(1); setResendTimer(30); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); }
         else { setActivationError('Failed to send OTP. Please try again.'); }
-    }, [phoneNumber, tag]);
+    }, [phoneNumber, tag, activateTagSendOtp]);
 
     const handleResendOtp = useCallback(async () => {
         if (resendTimer > 0) return;
@@ -1174,7 +1192,7 @@ export default function PublicScanScreen() {
         const success = await activateTagSendOtp(tag.code, `+91${phoneNumber}`);
         setActivating(false);
         if (success) { setResendTimer(30); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); }
-    }, [resendTimer, phoneNumber, tag]);
+    }, [resendTimer, phoneNumber, tag, activateTagSendOtp]);
 
     const handleVerifyOtp = useCallback(() => {
         if (otpValue.length !== 6) { setActivationError('Please enter the 6-digit OTP'); return; }
@@ -1197,11 +1215,16 @@ export default function PublicScanScreen() {
             }
             setActivationSuccess(true);
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-            setTimeout(() => loadTag(), 1500);
+            if (refreshTagTimeoutRef.current) {
+                clearTimeout(refreshTagTimeoutRef.current);
+            }
+            refreshTagTimeoutRef.current = setTimeout(() => {
+                void loadTag();
+            }, 1500);
         } else {
             setActivationError('Activation failed. Please try again.');
         }
-    }, [plateNumber, domainType, phoneNumber, otpValue, tag]);
+    }, [plateNumber, domainType, phoneNumber, otpValue, tag, activateTagVerifyOtp, loadTag]);
 
     // ─── Loading ────────────────────────────────────────────────────────────────
     // Use a default CAR config while loading — will re-derive once tag loads.
