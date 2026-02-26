@@ -224,7 +224,7 @@ export default function OtpScreen() {
     const insets = useSafeAreaInsets();
     const { phone } = useLocalSearchParams<{ phone: string }>();
     const theme = useAppTheme();
-    const { verifyOtp, setUser } = useAuthStore();
+    const { verifyOtp, sendOtp } = useAuthStore();
 
     const [digits, setDigits] = useState<string[]>(Array(OTP_LENGTH).fill(''));
     const [focusedIndex, setFocusedIndex] = useState(0);
@@ -232,6 +232,7 @@ export default function OtpScreen() {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
     const [timer, setTimer] = useState(RESEND_DURATION);
+    const [resending, setResending] = useState(false);
 
     // Refs for each hidden input
     const inputRef = useRef<TextInput>(null);
@@ -239,6 +240,8 @@ export default function OtpScreen() {
     const buttonScale = useRef(new Animated.Value(1)).current;
     const fadeAnim = useRef(new Animated.Value(0)).current;
     const slideAnim = useRef(new Animated.Value(24)).current;
+    const focusTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const navigateTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     // Entrance animation
     useEffect(() => {
@@ -264,7 +267,12 @@ export default function OtpScreen() {
 
     // Auto-focus the hidden input
     useEffect(() => {
-        setTimeout(() => inputRef.current?.focus(), 400);
+        focusTimeoutRef.current = setTimeout(() => inputRef.current?.focus(), 400);
+        return () => {
+            if (focusTimeoutRef.current) {
+                clearTimeout(focusTimeoutRef.current);
+            }
+        };
     }, []);
 
     const shake = useCallback(() => {
@@ -337,7 +345,7 @@ export default function OtpScreen() {
         if (isSuccess) {
             setSuccess(true);
 
-            setTimeout(() => {
+            navigateTimeoutRef.current = setTimeout(() => {
                 router.replace('/(tabs)');
             }, 1600);
         } else {
@@ -347,14 +355,36 @@ export default function OtpScreen() {
             setFocusedIndex(0);
             inputRef.current?.focus();
         }
-    }, [digits, phone, shake]);
+    }, [digits, phone, shake, verifyOtp, router]);
+
+    useEffect(() => {
+        return () => {
+            if (navigateTimeoutRef.current) {
+                clearTimeout(navigateTimeoutRef.current);
+            }
+        };
+    }, []);
 
     // Auto-submit when all digits filled
     useEffect(() => {
-        if (digits.every((d) => d !== '') && !loading) {
-            handleVerify();
+        if (digits.every((d) => d !== '') && !loading && !success) {
+            void handleVerify();
         }
-    }, [digits]);
+    }, [digits, loading, success, handleVerify]);
+
+    const handleResend = useCallback(async () => {
+        if (timer > 0 || resending) return;
+        setResending(true);
+        const resent = await sendOtp(phone || '');
+        setResending(false);
+
+        if (resent) {
+            setTimer(RESEND_DURATION);
+            setError('');
+        } else {
+            setError('Failed to resend OTP. Please try again.');
+        }
+    }, [timer, resending, sendOtp, phone]);
 
     const otpValue = digits.join('');
     const isComplete = otpValue.length === OTP_LENGTH;
@@ -491,7 +521,7 @@ export default function OtpScreen() {
                     {/* ── Resend ── */}
                     <ResendTimer
                         timer={timer}
-                        onResend={() => setTimer(RESEND_DURATION)}
+                        onResend={handleResend}
                         theme={theme}
                     />
 
