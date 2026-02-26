@@ -1298,7 +1298,7 @@ export default function PublicScanScreen() {
                         onResendOtp={handleResendOtp}
                         onChangeNumber={() => { setActivationStep(0); setOtpValue(''); }}
                         authUser={authUser}
-                        onActivateFromApp={() => router.push({ pathname: '/register-tag', params: { code: tag.code } })}
+                        onActivateFromApp={() => router.push('/(tabs)/scan')}
                     />
                     <ScreenFooter cfg={cfg} />
                 </ScrollView>

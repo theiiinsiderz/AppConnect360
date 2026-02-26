@@ -186,7 +186,7 @@ export default function TagsScreen() {
                 title="My Tags"
                 badge={tags.length > 0 ? tags.length : undefined}
                 rightAction={
-                    <AddButton onPress={() => router.push('/register-tag')} />
+                    <AddButton onPress={() => router.push('/(tabs)/scan')} />
                 }
             />
 
