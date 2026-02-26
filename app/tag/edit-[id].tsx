@@ -830,7 +830,7 @@ export default function EditTagScreen() {
     const { user } = useAuthStore();
     const insets = useSafeAreaInsets();
 
-    const tag = tags.find(t => t._id === id);
+    const tag = tags.find(t => t._id === id || t.id === id || t.code === id);
 
     // ── Form state
     const [nickname, setNickname] = useState('');
@@ -879,11 +879,25 @@ export default function EditTagScreen() {
 
     const handleSave = useCallback(async () => {
         const data = buildPendingData();
-        const result = await updateTag(tag!._id, data);
+        const tagKey = tag?._id || tag?.id || tag?.code;
+        if (!tagKey) return;
+        const result = await updateTag(tagKey, data);
+
+        if (result.unsupported) {
+            Alert.alert('Temporarily Unavailable', 'Tag editing is currently unavailable while backend migration is in progress.');
+            return;
+        }
 
         if (result.otpRequired) {
             setShowOtpSheet(true);
-            handleSendOtp();
+            if (emergencyPhone) {
+                setOtpSending(true);
+                const sent = await sendTagOtp(tagKey, emergencyPhone, data);
+                setOtpSending(false);
+                if (!sent) {
+                    Alert.alert('Could not send OTP', 'Please check the phone number and try again.');
+                }
+            }
             return;
         }
 
@@ -892,27 +906,31 @@ export default function EditTagScreen() {
             Alert.alert('Saved!', 'Your tag has been updated.', [
                 { text: 'Done', onPress: () => router.back() },
             ]);
-            fetchTags();
+            void fetchTags({ force: true });
         } else {
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
             Alert.alert('Update Failed', 'Please check your details and try again.');
         }
-    }, [buildPendingData, tag]);
+    }, [buildPendingData, tag, updateTag, router, fetchTags, emergencyPhone, sendTagOtp]);
 
     const handleSendOtp = useCallback(async () => {
         if (!emergencyPhone) return;
+        const tagKey = tag?._id || tag?.id || tag?.code;
+        if (!tagKey) return;
         setOtpSending(true);
-        const sent = await sendTagOtp(tag!._id, emergencyPhone, buildPendingData());
+        const sent = await sendTagOtp(tagKey, emergencyPhone, buildPendingData());
         setOtpSending(false);
         if (!sent) {
             Alert.alert('Could not send OTP', 'Please check the phone number and try again.');
         }
-    }, [emergencyPhone, tag, buildPendingData]);
+    }, [emergencyPhone, tag, buildPendingData, sendTagOtp]);
 
     const handleVerifyOtp = useCallback(async () => {
         if (otpValue.length !== 6) return;
+        const tagKey = tag?._id || tag?.id || tag?.code;
+        if (!tagKey) return;
         setOtpVerifying(true);
-        const success = await verifyTagOtpAndUpdate(tag!._id, emergencyPhone, otpValue, buildPendingData());
+        const success = await verifyTagOtpAndUpdate(tagKey, emergencyPhone, otpValue, buildPendingData());
         setOtpVerifying(false);
 
         if (success) {
@@ -922,12 +940,12 @@ export default function EditTagScreen() {
             Alert.alert('Verified & Saved!', 'Your phone number has been confirmed.', [
                 { text: 'Done', onPress: () => router.back() },
             ]);
-            fetchTags();
+            void fetchTags({ force: true });
         } else {
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
             Alert.alert('Invalid Code', 'The OTP you entered is incorrect. Please try again.');
         }
-    }, [otpValue, tag, emergencyPhone, buildPendingData]);
+    }, [otpValue, tag, emergencyPhone, buildPendingData, verifyTagOtpAndUpdate, router, fetchTags]);
 
     const handleDismissOtp = useCallback(() => {
         setShowOtpSheet(false);
