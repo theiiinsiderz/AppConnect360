@@ -1,6 +1,7 @@
-// Set this to your computer's local Wi-Fi IP address so Expo Go on your phone can connect!
-// e.g., 'http://10.169.138.121:5000/api'
-export const API_BASE_URL = 'https://carcard.onrender.com/api';
+// Set EXPO_PUBLIC_API_BASE_URL for environment-specific API routing.
+// Example: EXPO_PUBLIC_API_BASE_URL=http://10.169.138.121:5000/api
+const rawBaseUrl = process.env.EXPO_PUBLIC_API_BASE_URL || 'https://carcard.onrender.com/api';
+export const API_BASE_URL = rawBaseUrl.replace(/\/+$/, '');
 
 /**
  * Centralized API endpoint paths.
@@ -26,6 +27,11 @@ export const ENDPOINTS = {
     SHOP_PRODUCTS: '/shop/products',
     SHOP_ORDERS: '/shop/orders',
 
+    // Messaging / Notifications
+    MESSAGE_REGISTER_TOKEN: '/register-token',
+    MESSAGES_BY_OWNER: (ownerId: string) => `/messages/${ownerId}`,
+    MESSAGE_SEND: '/message',
+
     // Admin
-    ADMIN_TAGS: '/admin/tags/generate',
+    ADMIN_GENERATE: '/admin/generate',
 } as const;
