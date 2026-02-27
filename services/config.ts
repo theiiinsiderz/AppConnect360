@@ -30,7 +30,7 @@ export const ENDPOINTS = {
     // Messaging / Notifications
     MESSAGE_REGISTER_TOKEN: '/register-token',
     MESSAGES_BY_OWNER: (ownerId: string) => `/messages/${ownerId}`,
-    MESSAGE_SEND: '/message',
+    MESSAGE_SEND: '/messages/send',
 
     // Admin
     ADMIN_GENERATE: '/admin/generate',

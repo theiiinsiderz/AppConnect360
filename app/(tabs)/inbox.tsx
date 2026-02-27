@@ -77,7 +77,7 @@ export default function InboxScreen() {
         const ownerId = (user.id || user._id) as string;
 
         try {
-            const response = await api.get(ENDPOINTS.MESSAGES_BY_OWNER(ownerId));
+            const response = await api.get(`/api/messages/${ownerId}`);
             if (isMountedRef.current) {
                 setMessages(response.data);
             }

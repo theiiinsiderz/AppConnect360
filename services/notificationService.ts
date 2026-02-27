@@ -46,17 +46,11 @@ export class NotificationService {
             // Register token with backend
             try {
                 await api.post(ENDPOINTS.MESSAGE_REGISTER_TOKEN, { ownerId, pushToken: token });
-                if (__DEV__) console.log('Token registered with backend');
-            } catch (error: any) {
-                // Silently fail - don't block app functionality
-                if (__DEV__) {
-                    console.warn('Failed to register push token:', error.response?.data || error.message);
-                }
+                console.log('Token registered with backend');
+            } catch (error) {
+                console.error('Error registering token with backend:', error);
             }
-        } else {
-            alert('Must use physical device for Push Notifications');
         }
-
         return token;
     }
 }

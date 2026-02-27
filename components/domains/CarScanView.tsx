@@ -476,7 +476,7 @@ export function CarScanView({ payload }: { payload: any }) {
   const hasCall = payload.actionsAvailable?.some((a: any) => a.actionType === 'MASKED_CALL_OWNER');
   const hasParking = payload.actionsAvailable?.some((a: any) => a.actionType === 'REPORT_PARKING_ISSUE');
   const hasWhatsapp = payload.actionsAvailable?.some((a: any) => a.actionType === 'WHATSAPP_OWNER');
-  const hasSms = payload.actionsAvailable?.some((a: any) => a.actionType === 'SMS_OWNER');
+  const hasMessage = true;
   const hasAlert = !!payload.criticalAlert;
 
   const tagStatus: StatusType = hasAlert ? 'alert' : payload.isActive ? 'active' : 'inactive';
@@ -570,11 +570,11 @@ export function CarScanView({ payload }: { payload: any }) {
                 onPress={() => { }}
               />
             )}
-            {hasSms && (
+            {hasMessage && (
               <OutlineAction
                 icon="chatbubble-outline"
-                label="Send SMS"
-                hint="Message delivered anonymously"
+                label="Send Message"
+                hint="Message delivered to owner's inbox"
                 color={V.blueLight}
                 onPress={() => { }}
               />
@@ -583,7 +583,7 @@ export function CarScanView({ payload }: { payload: any }) {
         )}
 
         {/* ── Trust Strip ── */}
-        {(hasCall || hasSms || hasWhatsapp) && (
+        {(hasCall || hasMessage || hasWhatsapp) && (
           <TrustStrip anim={trustAnim} />
         )}
 
