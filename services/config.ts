@@ -1,6 +1,6 @@
 // Set EXPO_PUBLIC_API_BASE_URL for environment-specific API routing.
 // Example: EXPO_PUBLIC_API_BASE_URL=http://10.169.138.121:5000/api
-const rawBaseUrl = process.env.EXPO_PUBLIC_API_BASE_URL || 'https://backendconnect360-production.up.railway.app/api';
+const rawBaseUrl = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://10.169.138.121:5000/api';
 export const API_BASE_URL = rawBaseUrl.replace(/\/+$/, '');
 
 /**
@@ -9,8 +9,7 @@ export const API_BASE_URL = rawBaseUrl.replace(/\/+$/, '');
  */
 export const ENDPOINTS = {
     // Auth
-    AUTH_SEND_OTP: '/auth/send-otp',
-    AUTH_VERIFY_OTP: '/auth/verify-otp',
+    AUTH_AUTHENTICATE: '/auth/authenticate',
 
     // Tags
     TAGS: '/tags',

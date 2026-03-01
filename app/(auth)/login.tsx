@@ -2,55 +2,43 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
-    Keyboard,
-    KeyboardAvoidingView,
-    Platform,
-    StyleSheet,
-    Text,
-    TouchableWithoutFeedback,
-    View,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  Text,
+  TouchableWithoutFeedback,
+  View,
 } from "react-native";
 import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
-import { useAuthStore } from "../../store/authStore";
 import {
-    radii,
-    shadows,
-    spacing,
-    typography,
-    useAppTheme,
+  radii,
+  shadows,
+  spacing,
+  typography,
+  useAppTheme,
 } from "../../theme/theme";
 
 export default function LoginScreen() {
   const router = useRouter();
   const theme = useAppTheme();
   const isDark = theme.isDark;
-  const { sendOtp } = useAuthStore();
+  // Send OTP logic bypassed
 
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleSendOtp = async () => {
+  const handleSendOtp = () => {
     if (phone.length < 10) {
       setError("Please enter a valid phone number");
       return;
     }
-
-    setLoading(true);
     setError("");
-
-    const success = await sendOtp(phone);
-
-    setLoading(false);
-
-    if (success) {
-      router.push({ pathname: "/(auth)/otp", params: { phone } });
-    } else {
-      setError("Failed to send OTP. Please check your connection.");
-    }
+    router.push({ pathname: "/(auth)/otp", params: { phone } });
   };
 
   return (

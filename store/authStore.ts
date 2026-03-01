@@ -28,8 +28,7 @@ interface AuthState {
     error: string | null;
     isAuthenticated: boolean;
 
-    sendOtp: (phoneNumber: string) => Promise<boolean>;
-    verifyOtp: (phoneNumber: string, otp: string) => Promise<boolean>;
+    authenticate: (phoneNumber: string) => Promise<boolean>;
     logout: () => void;
     setUser: (user: User) => void;
 }
@@ -43,22 +42,10 @@ export const useAuthStore = create<AuthState>()(
             error: null,
             isAuthenticated: false,
 
-            sendOtp: async (phoneNumber) => {
+            authenticate: async (phoneNumber) => {
                 set({ isLoading: true, error: null });
                 try {
-                    await api.post(ENDPOINTS.AUTH_SEND_OTP, { phoneNumber });
-                    set({ isLoading: false });
-                    return true;
-                } catch (error: any) {
-                    set({ isLoading: false, error: error.response?.data?.message || 'Failed to send OTP' });
-                    return false;
-                }
-            },
-
-            verifyOtp: async (phoneNumber, otp) => {
-                set({ isLoading: true, error: null });
-                try {
-                    const response = await api.post(ENDPOINTS.AUTH_VERIFY_OTP, { phoneNumber, otp });
+                    const response = await api.post(ENDPOINTS.AUTH_AUTHENTICATE, { phoneNumber });
                     const { user, token } = response.data;
                     const normalizedUser = {
                         ...user,
@@ -74,7 +61,7 @@ export const useAuthStore = create<AuthState>()(
 
                     return true;
                 } catch (error: any) {
-                    set({ isLoading: false, error: error.response?.data?.message || 'Invalid OTP' });
+                    set({ isLoading: false, error: error.response?.data?.message || 'Authentication failed' });
                     return false;
                 }
             },

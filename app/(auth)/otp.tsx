@@ -224,7 +224,7 @@ export default function OtpScreen() {
     const insets = useSafeAreaInsets();
     const { phone } = useLocalSearchParams<{ phone: string }>();
     const theme = useAppTheme();
-    const { verifyOtp, sendOtp } = useAuthStore();
+    const { authenticate } = useAuthStore();
 
     const [digits, setDigits] = useState<string[]>(Array(OTP_LENGTH).fill(''));
     const [focusedIndex, setFocusedIndex] = useState(0);
@@ -338,7 +338,7 @@ export default function OtpScreen() {
             Animated.spring(buttonScale, { toValue: 1, tension: 200, friction: 6, useNativeDriver: true }),
         ]).start();
 
-        const isSuccess = await verifyOtp(phone || '', otp);
+        const isSuccess = await authenticate(phone || '');
 
         setLoading(false);
 
@@ -350,12 +350,12 @@ export default function OtpScreen() {
             }, 1600);
         } else {
             shake();
-            setError('The code you entered is incorrect. Please try again.');
+            setError('Authentication failed. Please try again.');
             setDigits(Array(OTP_LENGTH).fill(''));
             setFocusedIndex(0);
             inputRef.current?.focus();
         }
-    }, [digits, phone, shake, verifyOtp, router]);
+    }, [digits, phone, shake, authenticate, router]);
 
     useEffect(() => {
         return () => {
@@ -372,19 +372,16 @@ export default function OtpScreen() {
         }
     }, [digits, loading, success, handleVerify]);
 
-    const handleResend = useCallback(async () => {
+    const handleResend = useCallback(() => {
         if (timer > 0 || resending) return;
         setResending(true);
-        const resent = await sendOtp(phone || '');
-        setResending(false);
 
-        if (resent) {
+        setTimeout(() => {
+            setResending(false);
             setTimer(RESEND_DURATION);
             setError('');
-        } else {
-            setError('Failed to resend OTP. Please try again.');
-        }
-    }, [timer, resending, sendOtp, phone]);
+        }, 500);
+    }, [timer, resending]);
 
     const otpValue = digits.join('');
     const isComplete = otpValue.length === OTP_LENGTH;
