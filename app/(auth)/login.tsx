@@ -46,10 +46,11 @@ export default function LoginScreen() {
       setError("Please enter a valid phone number");
       return;
     }
+    setLoading(true);
     setError("");
     setPrivacyConsent(true);
 
-    const success = await authenticate(phone);
+    const success = await authenticate(phone, true);
 
     setLoading(false);
 
@@ -209,10 +210,7 @@ export default function LoginScreen() {
 
                     <Pressable
                       onPress={() =>
-                        router.push({
-                          pathname: "/(auth)/privacy-policy",
-                          params: { phone, source: "login", mode: "accept" },
-                        } as any)
+                        router.push("/(auth)/privacy-policy" as any)
                       }
                     >
                       <Text style={[styles.privacyLink, { color: theme.primary }]}>

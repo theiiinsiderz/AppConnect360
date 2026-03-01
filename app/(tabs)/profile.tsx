@@ -82,12 +82,8 @@ export default function ProfileScreen() {
     }, [logout, router]);
 
     const handleOpenPrivacyPolicy = useCallback(() => {
-        const normalizedPhone = (user?.phoneNumber || '').replace(/\D/g, '').slice(-10);
-        router.push({
-            pathname: '/(auth)/privacy-policy',
-            params: { phone: normalizedPhone, source: 'profile', mode: 'view' },
-        } as any);
-    }, [router, user?.phoneNumber]);
+        router.push('/(auth)/privacy-policy' as any);
+    }, [router]);
 
     return (
         <View style={[styles.container, { backgroundColor: t.bg }]}>

@@ -12,6 +12,7 @@ interface User {
     email?: string;
     avatar?: string;
     token?: string;
+    termsAccepted?: boolean;
     role?: 'user' | 'admin' | 'USER' | 'ADMIN';
 }
 
@@ -29,7 +30,7 @@ interface AuthState {
     isAuthenticated: boolean;
     hasAcceptedPrivacyPolicy: boolean;
 
-    authenticate: (phoneNumber: string) => Promise<boolean>;
+    authenticate: (phoneNumber: string, termsAccepted?: boolean) => Promise<boolean>;
     logout: () => void;
     setUser: (user: User) => void;
     setPrivacyConsent: (accepted: boolean) => void;
@@ -45,10 +46,20 @@ export const useAuthStore = create<AuthState>()(
             isAuthenticated: false,
             hasAcceptedPrivacyPolicy: false,
 
-            authenticate: async (phoneNumber) => {
+            authenticate: async (phoneNumber, termsAccepted) => {
                 set({ isLoading: true, error: null });
                 try {
-                    const response = await api.post(ENDPOINTS.AUTH_AUTHENTICATE, { phoneNumber });
+                    const resolvedTermsAccepted =
+                        typeof termsAccepted === 'boolean'
+                            ? termsAccepted
+                            : get().hasAcceptedPrivacyPolicy;
+
+                    const payload: Record<string, any> = { phoneNumber };
+                    if (resolvedTermsAccepted) {
+                        payload.termsAccepted = true;
+                    }
+
+                    const response = await api.post(ENDPOINTS.AUTH_AUTHENTICATE, payload);
                     const { user, token } = response.data;
                     const normalizedUser = {
                         ...user,
@@ -59,6 +70,8 @@ export const useAuthStore = create<AuthState>()(
                         user: normalizedUser,
                         token,
                         isAuthenticated: true,
+                        hasAcceptedPrivacyPolicy:
+                            normalizedUser?.termsAccepted === true || resolvedTermsAccepted,
                         isLoading: false
                     });
 
@@ -82,7 +95,8 @@ export const useAuthStore = create<AuthState>()(
                 user: {
                     ...user,
                     role: normalizeRole(user?.role),
-                }
+                },
+                hasAcceptedPrivacyPolicy: user?.termsAccepted === true || get().hasAcceptedPrivacyPolicy,
             }),
 
             setPrivacyConsent: (accepted) => set({
