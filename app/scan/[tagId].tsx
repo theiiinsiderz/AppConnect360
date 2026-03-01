@@ -1126,9 +1126,9 @@ export default function PublicScanScreen() {
 
     const loadTag = useCallback(async () => {
         setLoading(true);
-        if (__DEV__) console.log('Loading tag:', tagId);
+        // if (__DEV__) console.log('Loading tag:', tagId);
         const data = await getPublicTag(tagId as string);
-        if (__DEV__) console.log('Tag response:', JSON.stringify(data)?.slice(0, 200));
+        // if (__DEV__) console.log('Tag response:', JSON.stringify(data)?.slice(0, 200));
 
         if (!isMountedRef.current) {
             return;

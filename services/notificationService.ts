@@ -41,12 +41,12 @@ export class NotificationService {
             token = (await Notifications.getExpoPushTokenAsync({
                 projectId: '3498ce26-8fb5-4c5d-96a9-4b723b3defe8'
             })).data;
-            console.log('Expo Push Token:', token);
+            // console.log('Expo Push Token:', token);
 
             // Register token with backend
             try {
                 await api.post(ENDPOINTS.MESSAGE_REGISTER_TOKEN, { ownerId, pushToken: token });
-                console.log('Token registered with backend');
+                // console.log('Token registered with backend');
             } catch (error) {
                 console.error('Error registering token with backend:', error);
             }

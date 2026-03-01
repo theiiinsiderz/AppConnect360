@@ -10,27 +10,27 @@ const tests = [
 ];
 
 async function runAllTests() {
-    console.log('🚀 Running All Module Tests\n');
-    console.log('='.repeat(50) + '\n');
-    
+    // console.log('🚀 Running All Module Tests\n');
+    // console.log('='.repeat(50) + '\n');
+
     for (const test of tests) {
-        console.log(`\n📦 ${test.name}`);
-        console.log('-'.repeat(50));
-        
+        // console.log(`\n📦 ${test.name}`);
+        // console.log('-'.repeat(50));
+
         try {
-            execSync(`npx ts-node debug/${test.file}`, { 
+            execSync(`npx ts-node debug/${test.file}`, {
                 stdio: 'inherit',
                 cwd: process.cwd()
             });
         } catch (error) {
-            console.log(`\n⚠️  ${test.name} had errors\n`);
+            // console.log(`\n⚠️  ${test.name} had errors\n`);
         }
-        
-        console.log('\n');
+
+        // console.log('\n');
     }
-    
-    console.log('='.repeat(50));
-    console.log('✅ All tests completed\n');
+
+    // console.log('='.repeat(50));
+    // console.log('✅ All tests completed\n');
 }
 
 runAllTests();

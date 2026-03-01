@@ -268,7 +268,7 @@ export const useTagStore = create<TagState>((set, get) => ({
             return response.data;
         } catch (error: any) {
             if (__DEV__) {
-                console.log('getPublicTag error for', tagId, ':', error.response?.status, error.response?.data);
+                // console.log('getPublicTag error for', tagId, ':', error.response?.status, error.response?.data);
             }
             if (error.response?.status === 403 && error.response?.data?.locked) {
                 return error.response.data;

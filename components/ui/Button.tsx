@@ -59,7 +59,7 @@ export const Button: React.FC<ButtonProps> = ({
     return (
         <Pressable
             onPress={(e) => {
-                console.log('Button pressed:', title);
+                // console.log('Button pressed:', title);
                 onPress && onPress();
             }}
             disabled={disabled || loading}
