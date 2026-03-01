@@ -8,6 +8,7 @@ export default function AuthLayout() {
         <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: t.bg } }}>
             <Stack.Screen name="login" options={{ title: 'Login' }} />
             <Stack.Screen name="otp" options={{ title: 'Verify OTP' }} />
+            <Stack.Screen name="privacy-policy" options={{ title: 'Privacy Policy' }} />
         </Stack>
     );
 }

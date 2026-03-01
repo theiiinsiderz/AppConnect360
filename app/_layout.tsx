@@ -323,11 +323,13 @@ function RootLayoutNav() {
     if (!authReady) return;
 
     const inAuthGroup = segments[0] === '(auth)';
+    const authScreen = String(segments[1] ?? '');
+    const allowLoggedInAuthScreen = authScreen === 'otp' || authScreen === 'privacy-policy';
     const isLoggedIn = isAuthenticated && !!user;
 
     if (!isLoggedIn && !inAuthGroup) {
       router.replace('/(auth)/login');
-    } else if (isLoggedIn && inAuthGroup) {
+    } else if (isLoggedIn && inAuthGroup && !allowLoggedInAuthScreen) {
       router.replace('/(tabs)');
     }
   }, [user, segments, authReady, isAuthenticated]);

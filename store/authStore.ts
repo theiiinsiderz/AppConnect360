@@ -27,10 +27,12 @@ interface AuthState {
     isLoading: boolean;
     error: string | null;
     isAuthenticated: boolean;
+    hasAcceptedPrivacyPolicy: boolean;
 
     authenticate: (phoneNumber: string) => Promise<boolean>;
     logout: () => void;
     setUser: (user: User) => void;
+    setPrivacyConsent: (accepted: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -41,6 +43,7 @@ export const useAuthStore = create<AuthState>()(
             isLoading: false,
             error: null,
             isAuthenticated: false,
+            hasAcceptedPrivacyPolicy: false,
 
             authenticate: async (phoneNumber) => {
                 set({ isLoading: true, error: null });
@@ -67,7 +70,12 @@ export const useAuthStore = create<AuthState>()(
             },
 
             logout: () => {
-                set({ user: null, token: null, isAuthenticated: false });
+                set({
+                    user: null,
+                    token: null,
+                    isAuthenticated: false,
+                    hasAcceptedPrivacyPolicy: false,
+                });
             },
 
             setUser: (user) => set({
@@ -75,6 +83,10 @@ export const useAuthStore = create<AuthState>()(
                     ...user,
                     role: normalizeRole(user?.role),
                 }
+            }),
+
+            setPrivacyConsent: (accepted) => set({
+                hasAcceptedPrivacyPolicy: accepted,
             }),
         }),
         {

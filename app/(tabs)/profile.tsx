@@ -81,6 +81,14 @@ export default function ProfileScreen() {
         );
     }, [logout, router]);
 
+    const handleOpenPrivacyPolicy = useCallback(() => {
+        const normalizedPhone = (user?.phoneNumber || '').replace(/\D/g, '').slice(-10);
+        router.push({
+            pathname: '/(auth)/privacy-policy',
+            params: { phone: normalizedPhone, source: 'profile', mode: 'view' },
+        } as any);
+    }, [router, user?.phoneNumber]);
+
     return (
         <View style={[styles.container, { backgroundColor: t.bg }]}>
             <StatusBar
@@ -115,7 +123,7 @@ export default function ProfileScreen() {
                         iconColor={palette.emerald}
                         iconBg={t.successMuted}
                         label="Privacy & Security"
-                        onPress={() => { }}
+                        onPress={handleOpenPrivacyPolicy}
                     />
                     {isAdmin && (
                         <SettingsRow
@@ -192,7 +200,7 @@ export default function ProfileScreen() {
                         iconColor={palette.grey500}
                         iconBg={t.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'}
                         label="Privacy Policy"
-                        onPress={() => { }}
+                        onPress={handleOpenPrivacyPolicy}
                         showSeparator={false}
                     />
                 </SettingsSection>

@@ -1,19 +1,22 @@
+import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
-  StyleSheet,
-  Text,
-  TouchableWithoutFeedback,
-  View,
+    Keyboard,
+    KeyboardAvoidingView,
+    Platform,
+    Pressable,
+    StyleSheet,
+    Text,
+    TouchableWithoutFeedback,
+    View,
 } from "react-native";
 import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
+import { useAuthStore } from "../../store/authStore";
 import {
   radii,
   shadows,
@@ -26,19 +29,35 @@ export default function LoginScreen() {
   const router = useRouter();
   const theme = useAppTheme();
   const isDark = theme.isDark;
-  // Send OTP logic bypassed
+  const { authenticate, hasAcceptedPrivacyPolicy, setPrivacyConsent } = useAuthStore();
 
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [hasConsent, setHasConsent] = useState(hasAcceptedPrivacyPolicy);
 
-  const handleSendOtp = () => {
+  const handleSendOtp = async () => {
+    if (!hasConsent) {
+      setError("Please agree to the Privacy Policy to continue.");
+      return;
+    }
+
     if (phone.length < 10) {
       setError("Please enter a valid phone number");
       return;
     }
     setError("");
-    router.push({ pathname: "/(auth)/otp", params: { phone } });
+    setPrivacyConsent(true);
+
+    const success = await authenticate(phone);
+
+    setLoading(false);
+
+    if (success) {
+      router.push({ pathname: "/(auth)/otp", params: { phone } });
+    } else {
+      setError("Failed to send OTP. Please check your connection.");
+    }
   };
 
   return (
@@ -162,6 +181,45 @@ export default function LoginScreen() {
                     }
                     style={styles.input}
                   />
+
+                  <View style={styles.privacyWrap}>
+                    <Pressable
+                      style={styles.privacyToggle}
+                      onPress={() => {
+                        setHasConsent((prev: boolean) => {
+                          const nextValue = !prev;
+                          setPrivacyConsent(nextValue);
+                          return nextValue;
+                        });
+                        if (error) setError("");
+                      }}
+                      accessibilityRole="checkbox"
+                      accessibilityState={{ checked: hasConsent }}
+                      accessibilityLabel="Agree to Connect360 privacy policy"
+                    >
+                      <Ionicons
+                        name={hasConsent ? "checkbox" : "square-outline"}
+                        size={22}
+                        color={hasConsent ? theme.primary : theme.textSecondary}
+                      />
+                      <Text style={[styles.privacyText, { color: theme.textSecondary }]}>
+                        Do you agree with our Privacy Policy?
+                      </Text>
+                    </Pressable>
+
+                    <Pressable
+                      onPress={() =>
+                        router.push({
+                          pathname: "/(auth)/privacy-policy",
+                          params: { phone, source: "login", mode: "accept" },
+                        } as any)
+                      }
+                    >
+                      <Text style={[styles.privacyLink, { color: theme.primary }]}>
+                        Read our Privacy Policy
+                      </Text>
+                    </Pressable>
+                  </View>
 
                   <Button
                     title="Send OTP"
@@ -290,6 +348,26 @@ const styles = StyleSheet.create({
     fontSize: 18,
     letterSpacing: 1,
     fontWeight: "500",
+  },
+  privacyWrap: {
+    marginTop: spacing.xs,
+    gap: spacing.xs,
+  },
+  privacyToggle: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+  },
+  privacyText: {
+    ...typography.caption,
+    fontWeight: "500",
+    flex: 1,
+  },
+  privacyLink: {
+    ...typography.caption,
+    fontWeight: "700",
+    textDecorationLine: "underline",
+    marginLeft: 30,
   },
   button: {
     marginTop: spacing.xs,
