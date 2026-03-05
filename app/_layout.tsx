@@ -324,7 +324,7 @@ function RootLayoutNav() {
 
     const inAuthGroup = segments[0] === '(auth)';
     const authScreen = String(segments[1] ?? '');
-    const allowLoggedInAuthScreen = authScreen === 'otp' || authScreen === 'privacy-policy';
+    const allowLoggedInAuthScreen = authScreen === 'otp' || authScreen === 'privacy-policy' || authScreen === 'terms-conditions';
     const isLoggedIn = isAuthenticated && !!user;
 
     if (!isLoggedIn && !inAuthGroup) {

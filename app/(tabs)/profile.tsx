@@ -114,13 +114,6 @@ export default function ProfileScreen() {
                         label="Edit Profile"
                         onPress={() => { }}
                     />
-                    <SettingsRow
-                        icon="shield-checkmark-outline"
-                        iconColor={palette.emerald}
-                        iconBg={t.successMuted}
-                        label="Privacy & Security"
-                        onPress={handleOpenPrivacyPolicy}
-                    />
                     {isAdmin && (
                         <SettingsRow
                             icon="shield-outline"
@@ -188,8 +181,8 @@ export default function ProfileScreen() {
                         icon="document-text-outline"
                         iconColor={palette.grey500}
                         iconBg={t.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'}
-                        label="Terms of Service"
-                        onPress={() => { }}
+                        label="Terms & Conditions"
+                        onPress={() => router.push('/(auth)/terms-conditions' as any)}
                     />
                     <SettingsRow
                         icon="lock-closed-outline"
